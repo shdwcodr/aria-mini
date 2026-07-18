@@ -1,0 +1,241 @@
+ARIA SOC TIERED DRILL-DOWN REPORT
+================================================================================
+
+
+
+==================== HIGH PRIORITY ALERTS ====================
+
+
+CASE IDX 17
+CONF: 1.000 | RRS: 0.837
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Possible SYN behavior anomaly
+  - Packet structure deviation
+  - Urgency flag abnormality
+  - ACK pattern deviation
+REASONS:
+  - Header_Length ↑ attack signal (value=56.81, impact=0.145)
+  - urg_count ↑ attack signal (value=0.01, impact=0.077)
+  - ack_flag_number ↑ attack signal (value=0.0, impact=0.074)
+  - Variance ↑ attack signal (value=0.17, impact=0.072)
+  - syn_flag_number ↑ attack signal (value=1.0, impact=0.063)
+  - HTTPS ↑ attack signal (value=0.0, impact=0.052)
+------------------------------------------------------------
+
+CASE IDX 32
+CONF: 1.000 | RRS: 0.836
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Packet structure deviation
+  - Urgency flag abnormality
+  - ACK pattern deviation
+REASONS:
+  - fin_count ↑ attack signal (value=0.0, impact=0.177)
+  - urg_count ↑ attack signal (value=1.0, impact=0.115)
+  - fin_flag_number ↑ attack signal (value=0.0, impact=0.059)
+  - ack_flag_number ↑ attack signal (value=1.0, impact=0.056)
+  - Header_Length ↑ attack signal (value=54.0, impact=0.055)
+  - HTTPS ↑ attack signal (value=0.0, impact=0.046)
+------------------------------------------------------------
+
+CASE IDX 34
+CONF: 1.000 | RRS: 0.837
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Packet structure deviation
+  - Urgency flag abnormality
+  - ACK pattern deviation
+REASONS:
+  - Header_Length ↑ attack signal (value=183215.2, impact=0.131)
+  - ack_flag_number ↑ attack signal (value=1.0, impact=0.104)
+  - urg_count ↑ attack signal (value=5.8, impact=0.087)
+  - Variance ↑ attack signal (value=1.0, impact=0.060)
+  - HTTPS ↑ attack signal (value=1.0, impact=0.056)
+  - Max ↑ attack signal (value=2962.0, impact=0.051)
+------------------------------------------------------------
+
+CASE IDX 36
+CONF: 1.000 | RRS: 0.836
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Packet structure deviation
+  - Urgency flag abnormality
+  - ACK pattern deviation
+REASONS:
+  - fin_count ↑ attack signal (value=0.0, impact=0.108)
+  - Variance ↑ attack signal (value=0.0, impact=0.085)
+  - Header_Length ↑ attack signal (value=54.0, impact=0.082)
+  - urg_count ↑ attack signal (value=0.0, impact=0.077)
+  - ack_flag_number ↑ attack signal (value=0.0, impact=0.068)
+  - fin_flag_number ↑ attack signal (value=0.0, impact=0.053)
+------------------------------------------------------------
+
+CASE IDX 40
+CONF: 1.000 | RRS: 0.836
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Packet structure deviation
+  - Urgency flag abnormality
+  - ACK pattern deviation
+REASONS:
+  - fin_count ↑ attack signal (value=0.0, impact=0.160)
+  - Header_Length ↑ attack signal (value=0.0, impact=0.082)
+  - urg_count ↑ attack signal (value=0.0, impact=0.079)
+  - fin_flag_number ↑ attack signal (value=0.0, impact=0.067)
+  - ack_flag_number ↑ attack signal (value=0.0, impact=0.049)
+  - Tot sum ↑ attack signal (value=441.0, impact=0.046)
+------------------------------------------------------------
+
+
+==================== INVESTIGATION QUEUE ====================
+
+
+CASE IDX 54637
+CONF: 0.899 | RRS: 0.786
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Packet structure deviation
+  - Urgency flag abnormality
+  - ACK pattern deviation
+REASONS:
+  - urg_count ↑ attack signal (value=nan, impact=0.232)
+  - ack_flag_number ↑ attack signal (value=nan, impact=0.202)
+  - Min ↑ attack signal (value=nan, impact=0.192)
+  - rst_count ↑ attack signal (value=nan, impact=0.110)
+------------------------------------------------------------
+
+CASE IDX 14837
+CONF: 0.899 | RRS: 0.785
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Packet structure deviation
+REASONS:
+  - Min ↑ attack signal (value=nan, impact=0.219)
+  - AVG ↑ attack signal (value=nan, impact=0.178)
+  - Weight ↑ attack signal (value=nan, impact=0.176)
+  - Covariance ↑ attack signal (value=nan, impact=0.151)
+------------------------------------------------------------
+
+CASE IDX 44096
+CONF: 0.897 | RRS: 0.785
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Possible SYN behavior anomaly
+  - Packet structure deviation
+  - ACK pattern deviation
+REASONS:
+  - syn_count ↑ attack signal (value=nan, impact=0.346)
+  - Header_Length ↑ attack signal (value=nan, impact=0.152)
+  - HTTPS ↑ attack signal (value=nan, impact=0.106)
+  - ack_count ↑ attack signal (value=nan, impact=0.089)
+  - TCP ↑ attack signal (value=nan, impact=0.086)
+------------------------------------------------------------
+
+CASE IDX 39033
+CONF: 0.897 | RRS: 0.785
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Possible SYN behavior anomaly
+  - Packet structure deviation
+  - ACK pattern deviation
+REASONS:
+  - syn_count ↑ attack signal (value=0.0, impact=0.281)
+  - Header_Length ↑ attack signal (value=54.0, impact=0.136)
+  - HTTPS ↑ attack signal (value=0.0, impact=0.092)
+  - flow_duration ↑ attack signal (value=0.0, impact=0.089)
+  - ack_count ↑ attack signal (value=1.0, impact=0.070)
+  - TCP ↑ attack signal (value=1.0, impact=0.064)
+------------------------------------------------------------
+
+CASE IDX 13270
+CONF: 0.897 | RRS: 0.785
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Possible SYN behavior anomaly
+  - Packet structure deviation
+  - Urgency flag abnormality
+REASONS:
+  - syn_count ↑ attack signal (value=0.0, impact=0.331)
+  - Header_Length ↑ attack signal (value=16.35, impact=0.116)
+  - urg_count ↑ attack signal (value=0.04, impact=0.095)
+  - TCP ↑ attack signal (value=0.0, impact=0.093)
+  - flow_duration ↑ attack signal (value=0.0303649115562438, impact=0.089)
+------------------------------------------------------------
+
+
+==================== LOGGED SUSPICIOUS ====================
+
+
+CASE IDX 19036
+CONF: 0.599 | RRS: 0.634
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Possible SYN behavior anomaly
+  - Packet structure deviation
+  - Urgency flag abnormality
+  - ACK pattern deviation
+REASONS:
+  - Header_Length ↑ attack signal (value=nan, impact=0.169)
+  - urg_count ↑ attack signal (value=nan, impact=0.136)
+  - syn_count ↑ attack signal (value=nan, impact=0.109)
+  - Srate ↑ attack signal (value=nan, impact=0.094)
+------------------------------------------------------------
+
+CASE IDX 4534
+CONF: 0.597 | RRS: 0.634
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Packet structure deviation
+  - Urgency flag abnormality
+  - ACK pattern deviation
+REASONS:
+  - urg_count ↑ attack signal (value=0.0, impact=0.186)
+  - ack_flag_number ↑ attack signal (value=0.0, impact=0.158)
+  - Min ↑ attack signal (value=54.0, impact=0.130)
+  - rst_count ↑ attack signal (value=0.0, impact=0.111)
+------------------------------------------------------------
+
+CASE IDX 6920
+CONF: 0.596 | RRS: 0.636
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Packet structure deviation
+  - Urgency flag abnormality
+  - ACK pattern deviation
+REASONS:
+  - urg_count ↑ attack signal (value=0.0, impact=0.182)
+  - Header_Length ↑ attack signal (value=8849.0, impact=0.136)
+  - ack_flag_number ↑ attack signal (value=0.0, impact=0.104)
+  - HTTPS ↑ attack signal (value=0.0, impact=0.087)
+  - rst_count ↑ attack signal (value=0.0, impact=0.082)
+------------------------------------------------------------
+
+CASE IDX 2736
+CONF: 0.596 | RRS: 0.635
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Packet structure deviation
+  - Urgency flag abnormality
+  - ACK pattern deviation
+REASONS:
+  - ack_flag_number ↑ attack signal (value=0.0, impact=0.173)
+  - urg_count ↑ attack signal (value=0.0, impact=0.160)
+  - rst_count ↑ attack signal (value=0.44, impact=0.091)
+  - Header_Length ↑ attack signal (value=120.56, impact=0.090)
+------------------------------------------------------------
+
+CASE IDX 22327
+CONF: 0.596 | RRS: 0.635
+VERDICT: HIGH CONFIDENCE ATTACK
+PATTERNS:
+  - Packet structure deviation
+  - Urgency flag abnormality
+  - ACK pattern deviation
+REASONS:
+  - ack_flag_number ↑ attack signal (value=0.0, impact=0.193)
+  - urg_count ↑ attack signal (value=0.0, impact=0.135)
+  - Header_Length ↑ attack signal (value=0.0, impact=0.130)
+  - rst_count ↑ attack signal (value=0.0, impact=0.090)
+  - HTTPS ↑ attack signal (value=0.0, impact=0.069)
+------------------------------------------------------------
