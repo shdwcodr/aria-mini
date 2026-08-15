@@ -1,0 +1,5 @@
+Metric,"Baseline (top-K conf, TP/FP MTTR)","ARIA (full triage, TP/FP MTTR)"
+Final fatigue,0.875,0.907
+Avg MTTR (min),18.63,19.38
+Attacks detected,1472.0,1537.0
+Max queue,1270.0,1500.0

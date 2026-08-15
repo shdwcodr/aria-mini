@@ -1,0 +1,4 @@
+Trainer-holdout pool size: 60000
+Simulation/eval pool size: 40000
+Unique overlapping row-hashes: 34930
+Sim-pool rows affected: 40000 (100.000%)

@@ -18,11 +18,11 @@ from data_loader import DataLoader
 # =============================================================================
 # CONFIG
 # =============================================================================
-MODEL_PATH = "models/mlp_alert_train300k_5attack.pkl"
-SCALER_PATH = "models/scaler_train200k_60pct.pkl"
+MODEL_PATH = "models/mlp_alert_train120k_4attack.pkl"
+SCALER_PATH = "models/scaler_train120k_4attack.pkl"
 TEST_SIZE = 40000
 TEST_ATTACK_PRIOR = 0.05
-TRAIN_ATTACK_PRIOR = 0.55
+TRAIN_ATTACK_PRIOR = 0.40
 
 # =============================================================================
 # PRIOR-SHIFT CORRECTION

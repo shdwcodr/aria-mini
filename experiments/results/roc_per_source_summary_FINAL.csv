@@ -1,0 +1,4 @@
+source,AUC,FPR_at_global_threshold,TPR_at_global_threshold_i.e._recall
+CIC-IDS2017,0.7851,0.0003,0.2974
+CIC-IoT2023,0.9978,0.0185,0.9881
+UNSW-NB15,0.8672,0.0185,0.5227

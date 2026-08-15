@@ -1,0 +1,5 @@
+Pooled McNemar's test across 30 bootstrap-resampled seeds
+  b (ARIA caught, baseline missed), summed across seeds : 2384
+  c (baseline caught, ARIA missed), summed across seeds : 388
+  chi-squared (continuity corrected) : 1435.7955
+  p-value : 0

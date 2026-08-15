@@ -11,9 +11,10 @@ from data_loader import DataLoader   # Your new DataLoader
 # =============================================================================
 # CONFIG
 # =============================================================================
-TRAIN_SIZE = 300000
-ATTACK_RATIO_TRAIN = 0.55
-TEST_SIZE = 150000
+TRAIN_SIZE = 120000
+ATTACK_RATIO_TRAIN = 0.40
+TEST_SIZE = 6
+0000
 
 print(f"=== ARIA Alert MLP Training ===\n"
       f"Train: {TRAIN_SIZE:,} ({ATTACK_RATIO_TRAIN:.0%} attack)\n"
@@ -37,8 +38,8 @@ for f in feature_names:
     print(" -", f)
 
 os.makedirs("models", exist_ok=True)
-joblib.dump(loader.scaler, "models/scaler_train200k_60pct.pkl")
-print("\n✅ Scaler saved: models/scaler_train200k_60pct.pkl")
+joblib.dump(loader.scaler, f"models/scaler_train{TRAIN_SIZE//1000}k_{int(ATTACK_RATIO_TRAIN*10)}attack.pkl")
+print(f"\n✅ Scaler saved: models/scaler_train{TRAIN_SIZE//1000}k_{int(ATTACK_RATIO_TRAIN*10)}attack.pkl")
 
 # =============================================================================
 # TEST DATA (Held-out)
@@ -117,4 +118,4 @@ plt.show()
 model_path = f"models/mlp_alert_train{TRAIN_SIZE//1000}k_{int(ATTACK_RATIO_TRAIN*10)}attack.pkl"
 joblib.dump(mlp, model_path)
 print(f"\n✅ Model saved: {model_path}")
-print("✅ Scaler saved: models/scaler_train200k_60pct.pkl")
+print(f"✅ Scaler saved: models/scaler_train{TRAIN_SIZE//1000}k_{int(ATTACK_RATIO_TRAIN*10)}attack.pkl")

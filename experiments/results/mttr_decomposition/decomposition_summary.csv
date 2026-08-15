@@ -1,0 +1,5 @@
+Metric,"ARIA (full, evidence-dependent)","ARIA (fixed-reduction, evidence removed)"
+Final fatigue,0.733,0.734
+Avg MTTR (min),9.14,9.14
+Attacks detected,1641.0,1639.0
+Max queue,1357.0,1360.0

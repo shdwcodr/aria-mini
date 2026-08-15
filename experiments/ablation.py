@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import sys
 import joblib
 import shap
 import warnings
@@ -12,6 +13,10 @@ from sklearn.metrics import (f1_score, precision_score, recall_score,
                              classification_report)
 from scipy.stats import spearmanr
 from lime.lime_tabular import LimeTabularExplainer
+# Add project root to Python path
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, PROJECT_ROOT)
+
 from data_loader import DataLoader
 
 warnings.filterwarnings("ignore")
@@ -31,13 +36,14 @@ print("\n=== ARIA RRS ABLATION STUDY ===\n")
 
 # =============================================================================
 # CONFIG — must match simulation exactly
-# =============================================================================
-MODEL_PATH         = "models/mlp_alert_calibrated_train200k_1attack.pkl"
-TRAIN_ATTACK_PRIOR = 0.60
+# ============================================================================
+MODEL_PATH = "models/mlp_alert_train120k_4attack.pkl"
+SCALER_PATH = "models/scaler_train120k_4attack.pkl"
+TRAIN_ATTACK_PRIOR = 0.40
 TEST_ATTACK_PRIOR  = 0.05
-SAMPLE_SIZE        = 800     # samples to run SHAP+LIME on (expensive)
-RRS_ALERT_THRESH   = 0.20    # same as BASE_THRESHOLD in simulation
-K                  = 50      # top-K SOC queue size for precision@K
+SAMPLE_SIZE        = 1000    # samples to run SHAP+LIME on (expensive)
+RRS_ALERT_THRESH   = 0.60    # same as BASE_THRESHOLD in simulation
+K                  = 45     # top-K SOC queue size for precision@K
 
 # =============================================================================
 # PRIOR-SHIFT CORRECTION  (identical to simulation)
@@ -88,18 +94,29 @@ def compute_rrs(conf, shap_vals, lime_vals, w):
 # =============================================================================
 # LOAD MODEL + DATA
 # =============================================================================
-print("Loading model and data…")
-model  = joblib.load(MODEL_PATH)
+print("Loading model and test data...")
+
+model = joblib.load(MODEL_PATH)
+
 loader = DataLoader()
+loader.scaler = joblib.load(SCALER_PATH)
+loader.scaler_fitted = True
 
-df = loader.load_all_datasets(max_samples=150000, max_iot_parts=12)
+print("✅ Scaler loaded")
 
-X, y, feature_names = loader.preprocess(
-    df,
+# Use the exact held-out test split
+df_test = loader.load_test()
+
+X, y, feature_names, df_balanced = loader.preprocess(
+    df_test,
     target_attack_ratio=TEST_ATTACK_PRIOR,
-    target_total_samples=60000
+    target_total_samples=40000
 )
+
 X = np.nan_to_num(X, nan=0.0)
+
+print(f"Dataset: {len(X):,} samples")
+print(f"Attacks: {int(y.sum())}")
 
 # Apply prior correction — same as simulation
 probs_raw = model.predict_proba(X)[:, 1]
@@ -278,52 +295,6 @@ else:
     df_out.to_csv(csv_path, index=False)
 
 print(f"\nSaved → {csv_path}")
-
-# =============================================================================
-# FIGURE 1 — PER-SOURCE CONFUSION MATRICES
-# Runs model on full dataset, splits results by source tag
-# =============================================================================
-print("\nGenerating per-source confusion matrices…")
-
-# Get raw predictions on full dataset (no prior correction needed for CM)
-y_pred_full = model.predict(X)
-sources     = df["source"].values[-len(X):]   # source tag per sample
-
-unique_sources = sorted(set(sources))
-n_src = len(unique_sources)
-
-fig_cm, axes_cm = plt.subplots(
-    1, n_src, figsize=(4 * n_src, 4), constrained_layout=True
-)
-if n_src == 1:
-    axes_cm = [axes_cm]
-
-for ax, src in zip(axes_cm, unique_sources):
-    mask   = sources == src
-    y_s    = y[mask]
-    yp_s   = y_pred_full[mask]
-    cm     = confusion_matrix(y_s, yp_s)
-    disp   = ConfusionMatrixDisplay(cm, display_labels=["Benign", "Attack"])
-    disp.plot(ax=ax, colorbar=False, cmap="Blues")
-    f1_s   = f1_score(y_s, yp_s, zero_division=0)
-    rec_s  = recall_score(y_s, yp_s, zero_division=0)
-    ax.set_title(f"{src}\nF1={f1_s:.2f}  Recall={rec_s:.2f}", fontsize=9)
-
-fig_cm.suptitle("ARIA Model — Confusion Matrix per Dataset Source", fontsize=11)
-os.makedirs("experiments/rss_ablation/results", exist_ok=True)
-cm_path = "experiments/rss_ablation/results/confusion_matrices_per_source.png"
-fig_cm.savefig(cm_path, dpi=300, bbox_inches="tight")
-plt.show()
-print(f"Confusion matrices → {cm_path}")
-
-# Print per-source classification report to console too
-print("\n=== PER-SOURCE CLASSIFICATION REPORT ===")
-for src in unique_sources:
-    mask = sources == src
-    print(f"\n{src}  (n={mask.sum()})")
-    print(classification_report(y[mask], y_pred_full[mask],
-                                target_names=["Benign", "Attack"],
-                                zero_division=0))
 
 # =============================================================================
 # FIGURE 2 — RRS ABLATION BAR CHART

@@ -1,0 +1,9 @@
+Metric,Baseline (top-K conf),ARIA (full triage)
+Final fatigue,0.875,0.904
+Avg MTTR — blended (min),18.63,19.15
+Avg MTTR — TRUE ATTACKS only (min),18.71,18.98
+Avg MTTR — FALSE POSITIVES only (min),4.8,5.09
+Total analyst-minutes on false positives (shift),38.4,86.6
+Attacks detected,1472.0,1534.0
+False positives escalated (shift),8.0,17.0
+Max queue,1270.0,1352.0

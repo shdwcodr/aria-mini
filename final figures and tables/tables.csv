@@ -1,41 +1,69 @@
 --- table 1 per source classificatiion report ---
 
-Source Precision Recall F1 Support
-CIC-IDS2017 0.95 0.65 0.53 21724
-UNSW-NB15 0.96 0.70 0.52 3968
-LMD-2023 0.96 0.67 0.52 12098
-BCCC-DarkNet-2025 0.94 0.64 0.50 183
-CIC-IoT2023  0.95 0.64 0.52 19027
-Overall 0.96 0.68 0.57 40000
+Source AUC Precision Recall F1 Support
+CIC-IDS2017 78.51% 77.67% 29.74% 43.01% 32210
+UNSW-NB15 86.72% 30.26% 52.26% 38.33% 2906
+CIC-IoT2023 99.78% 96.58% 98.76% 97.66% 4884
+Overall 96.01% 92.91% 88.45% 90.62% 40000
 
 --- table 2 model traning scale ---
-Train Size Attack % Precision Recall F1 Accuracy
-100k 60% 0.90 0.64 0.74
-120k 40% 0.91 0.78 0.84
-120k 60% 0.94 0.92 0.93
-200k 40% 0.96 0.82 0.88
-300k 50% 0.95 0.89 0.92
 
---- table 3 ARIA Simualtion mean and sd --- 
+Train Size Attack % Precision Recall F1 Accuracy
+100k 60% 40.94% 90.32% 56.34% 93%
+120k 40% 75.69% 89.23% 81.63% 98.03%
+120k 60% 41.43% 90.37% 56.81% 93.13%
+200k 40% 75.38% 89.02% 81.63% 98%
+300k 50% 41.17% 88.91% 56.3%% 97.06%
+
+--- table 3 prior shift effect ---
+
+ Model  Precision Recall F1 False Positives (FP) 
+Raw model (0.5 threshold)  0.579 0.927 0.712 1355 
+Prior-corrected (Youden threshold) 0.929 0.885 0.906 135
+Δ (Change) +60.4% −4.5% +27.2% −90.0%
+
+--- table 4 ARIA vs baseline --- 
 
 Metric Baseline ARIA Δ Improvement Note
-Final Fatigue 1.0 0.618 -0.38 38.2
-Avg MTTR (min) 23.42 11.1 -12.32 52.6
-Max Queue Size 1500 433 -1067.00 71.1
-Attacks Detected 745 21 -724.00 97.2 Raw count
-Est. False Positive Rate ~95% ~low Baseline floods with FPs
-Detection Delay 1.0 1.0 +0.00 0.0
+Final Fatigue 0.9097 0.737 18.96% reduction in aria
+Avg MTTR (min) 19.644 9.25 52.89% reduction in aria
+Attacks Detected 1671 1742 4.25% increase in aria
+queue size 1500 1268 8.80% reduction in aria
 
---- table 4 RRS abaltion study ---
+--- table 5 RRS abaltion study ---
 
-Variant F1 Separation Top-K Precision Recall@K
-Conf only 0.66 0.001 0.060 0.0375
-Conf + Agreement 0.54 0.003 0.100 0.0625
-Conf + SHAP 0.82 0.004 0.120 0.0750
-Full RRS 0.97 0.006 0.180 0.120
+Variant  F1 Alert rate Separation Top-K Precision 
+Conf only 0.921 8.9% 0.869 1.000 
+Conf + SHAP 0.920 8.9% 0.535 0.973 
+Conf + Agreement 0.910 8.8% 0.392 0.946
+Full RRS 0.631 4.9% 0.320 0.946
 
---- table 5 tarige sensitivity analysis ---
+--- table 6 SHAP & LIME drill down ---
 
-Tier 3 Cutoff Tier 3 % Attacks Detected Max Queue Final Fatigue
-0.07 (loose) 18.1% 219 1500 0.957
-0.10 (tight) 1.1% 21 433 0.618
+Rank Feature Value (z-score) SHAP LIME Direction Agree 
+1 protocol 5.6439 +0.4249 +0.0310 → Attack  ✓ 
+2 iat_mean 1.2911 +0.3330 +0.0326 → Attack ✓  
+3 duration −0.3304 +0.0436 −0.0233 → Attack ✗ 
+4 std_packet_size −0.3398 +0.0388 −0.0231 → Attack  ✗   
+5 min_packet_size 4.8440 −0.0324 −0.0046 → Benign  ✓   
+6 max_packet_size 0.1163 +0.0232 +0.0117 → Attack  ✓   
+
+
+--- table 7 triage sensitivity analysis ---
+
+Tier 3 Threshold  Initial RSS Threshold Max RSS Threshold -> % Attacks Detected(RAW) RSS Alerts Max Queue Final Fatigue Avg MTTR 
+0.10 0.40 0.55 (loose) 87.1% 55-70 per window 35-55 per window 1371 0.733 9.11 min
+0.15 0.55 0.70 (medium) 75.5% 55-70 per window 26-53 per window 1362 0.734 9.17 min
+0.20 0.60 0.75 (tight) -> 24.2% 55–70 per window 0-32 per window 1359 0.738 9.26 min
+
+--- table 8 compute efficiency ---
+
+Operation  Time 
+SHAP (direct, per sample) 45.2 ms
+LIME (direct, per sample) 12.8 ms
+Combined SHAP + LIME (direct)  58.0 ms
+Cache lookup (ball-tree kNN) 0.031 ms
+Speedup (cache vs. direct) ≈ 1806
+% of traffic reaching full XAI pipeline  ≈ 3% (Tier 3 only)
+SHAP/LIME calls avoided per 1000-flow batch ≈ 970 (97%)
+
