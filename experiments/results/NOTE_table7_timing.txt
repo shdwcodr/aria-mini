@@ -1,0 +1,14 @@
+Table 7 (SHAP/LIME timing) — no pinned CSV in this repo, on purpose.
+
+These are wall-clock measurements (per-alert SHAP time, LIME time, cache
+lookup time). They will not match the paper's numbers on a different
+machine, under different load, or with a different Python/SHAP version —
+the same caveat the paper makes about its own hardware (Apple M4 Air,
+16 GB RAM, single thread).
+
+Run `generate_drilldown_table.py` on your own hardware to regenerate this
+table. The relative story (cache lookup ~3 orders of magnitude faster than
+direct SHAP+LIME) should hold regardless of hardware; the absolute
+millisecond values will not.
+
+See REPRODUCIBILITY.md, "Known Gaps", for the full explanation.

@@ -27,7 +27,7 @@ from sklearn.metrics import (
     average_precision_score, brier_score_loss
 )
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, PROJECT_ROOT)
 from data_loader import DataLoader  # noqa: E402
 
@@ -36,34 +36,32 @@ TRAIN_PRIOR = 0.40
 TEST_PRIOR = 0.05
 N_BINS = 10  # for ECE / reliability diagram
 
+# The final deployed model selected in Table 3 (120k samples, 40% attack
+# prevalence). This is the same model loaded by source_per_eval.py and
+# ablation.py — keep this in sync with those if the deployed model ever
+# changes.
+MODEL_PATH = os.path.join(PROJECT_ROOT, "models", "mlp_alert_train120k_4attack.pkl")
+SCALER_PATH = os.path.join(PROJECT_ROOT, "models", "scaler_train120k_4attack.pkl")
+
 print("=" * 70)
 print(" ROC / PR / CALIBRATION PROBE")
 print("=" * 70)
 
-# =============================================================================
-# ADAPT THIS SECTION — same pipeline as the other two probes
-# =============================================================================
+
 def load_trained_pipeline():
     import joblib
-    candidates_model = ["models/mlp_model.pkl", "model/mlp_model.pkl",
-                         "artifacts/mlp_model.pkl", "mlp_model.pkl"]
-    candidates_scaler = ["models/scaler.pkl", "model/scaler.pkl",
-                          "artifacts/scaler.pkl", "scaler.pkl"]
-    model, scaler = None, None
-    for p in candidates_model:
-        fp = os.path.join(PROJECT_ROOT, p)
-        if os.path.exists(fp):
-            model = joblib.load(fp)
-            break
-    for p in candidates_scaler:
-        fp = os.path.join(PROJECT_ROOT, p)
-        if os.path.exists(fp):
-            scaler = joblib.load(fp)
-            break
-    if model is None or scaler is None:
+    if not os.path.exists(MODEL_PATH):
         raise FileNotFoundError(
-            "Edit load_trained_pipeline() to point at your saved model/scaler."
+            f"Model not found at {MODEL_PATH}. Update MODEL_PATH/SCALER_PATH "
+            "above if the deployed model filename has changed."
         )
+    if not os.path.exists(SCALER_PATH):
+        raise FileNotFoundError(
+            f"Scaler not found at {SCALER_PATH}. Update MODEL_PATH/SCALER_PATH "
+            "above if the deployed model filename has changed."
+        )
+    model = joblib.load(MODEL_PATH)
+    scaler = joblib.load(SCALER_PATH)
     return model, scaler
 
 
@@ -122,24 +120,31 @@ auc = roc_auc_score(y_test, p_corrected)
 precision, recall, _ = precision_recall_curve(y_test, p_corrected)
 ap = average_precision_score(y_test, p_corrected)
 
-fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
-axes[0].plot(fpr, tpr, label=f"ARIA (AUC = {auc:.4f})")
-axes[0].plot([0, 1], [0, 1], "--", color="gray", label="Chance")
-axes[0].set_xlabel("False Positive Rate")
-axes[0].set_ylabel("True Positive Rate")
-axes[0].set_title("ROC Curve (40k deployment test set)")
-axes[0].legend()
-
-axes[1].plot(recall, precision, label=f"ARIA (AP = {ap:.4f})")
-axes[1].set_xlabel("Recall")
-axes[1].set_ylabel("Precision")
-axes[1].set_title("Precision-Recall Curve (40k deployment test set)")
-axes[1].legend()
-
-plt.tight_layout()
 OUT_DIR = "experiments/results"
 os.makedirs(OUT_DIR, exist_ok=True)
-plt.savefig(os.path.join(OUT_DIR, "roc_pr_curves.png"), dpi=200)
+
+# Saved as two separate figures (not a combined 1x2 subplot) because that is
+# the artifact format shipped in "final figures and tables/" and referenced
+# by name in REPRODUCIBILITY.md — roc_curve_FINAL.png and pr_curve_FINAL.png.
+fig, ax = plt.subplots(figsize=(5.5, 5.5))
+ax.plot(fpr, tpr, label=f"ARIA (AUC = {auc:.4f})")
+ax.plot([0, 1], [0, 1], "--", color="gray", label="Chance")
+ax.set_xlabel("False Positive Rate")
+ax.set_ylabel("True Positive Rate")
+ax.set_title("ROC Curve (40k deployment test set)")
+ax.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(OUT_DIR, "roc_curve_FINAL.png"), dpi=200)
+plt.close()
+
+fig, ax = plt.subplots(figsize=(5.5, 5.5))
+ax.plot(recall, precision, label=f"ARIA (AP = {ap:.4f})")
+ax.set_xlabel("Recall")
+ax.set_ylabel("Precision")
+ax.set_title("Precision-Recall Curve (40k deployment test set)")
+ax.legend()
+plt.tight_layout()
+plt.savefig(os.path.join(OUT_DIR, "pr_curve_FINAL.png"), dpi=200)
 plt.close()
 
 print(f"\nAUC-ROC: {auc:.4f}")
@@ -174,24 +179,29 @@ ax.set_ylabel("Observed attack frequency (bin)")
 ax.set_title(f"Reliability Diagram\nECE before={ece_before:.3f}, after={ece_after:.3f}")
 ax.legend()
 plt.tight_layout()
-plt.savefig(os.path.join(OUT_DIR, "reliability_diagram.png"), dpi=200)
+plt.savefig(os.path.join(OUT_DIR, "calibration_reliability_FINAL.png"), dpi=200)
 plt.close()
 
 # =============================================================================
 # SAVE NUMERIC SUMMARY
 # =============================================================================
-summary = pd.DataFrame([{
-    "auc_roc": auc,
-    "average_precision": ap,
-    "ece_before": ece_before,
-    "ece_after": ece_after,
-    "brier_before": brier_before,
-    "brier_after": brier_after,
-}])
-summary.to_csv(os.path.join(OUT_DIR, "calibration_roc_summary.csv"), index=False)
+# Written directly in the long-format {variant, ECE, Brier} shape used by
+# calibration_summary_FINAL.csv (Table 11), rather than a wide before/after
+# row, so this script's output matches the shipped final file with no manual
+# reshaping step.
+summary = pd.DataFrame([
+    {"variant": "raw", "ECE": ece_before, "Brier": brier_before},
+    {"variant": "prior_corrected", "ECE": ece_after, "Brier": brier_after},
+])
+summary.to_csv(os.path.join(OUT_DIR, "calibration_summary_FINAL.csv"), index=False)
 
-print(f"\n✅ Saved figure: {OUT_DIR}/roc_pr_curves.png")
-print(f"✅ Saved figure: {OUT_DIR}/reliability_diagram.png")
-print(f"✅ Saved to: {OUT_DIR}/calibration_roc_summary.csv")
-print("\nPaste the printed numbers back (figures I can't see, but the ECE/Brier")
-print("numbers are what go in the text) and I'll write the Section IV subsection + figure captions.")
+# ROC-AUC / Average Precision are printed (they aren't part of Table 11) and
+# also stashed alongside the curve PNGs for anyone regenerating Fig. 4/6.
+with open(os.path.join(OUT_DIR, "calibration_auc_ap_FINAL.txt"), "w") as f:
+    f.write(f"auc_roc={auc:.4f}\naverage_precision={ap:.4f}\n")
+
+print(f"\n✅ Saved figure: {OUT_DIR}/roc_curve_FINAL.png")
+print(f"✅ Saved figure: {OUT_DIR}/pr_curve_FINAL.png")
+print(f"✅ Saved figure: {OUT_DIR}/calibration_reliability_FINAL.png")
+print(f"✅ Saved to: {OUT_DIR}/calibration_summary_FINAL.csv")
+print(f"✅ Saved to: {OUT_DIR}/calibration_auc_ap_FINAL.txt")

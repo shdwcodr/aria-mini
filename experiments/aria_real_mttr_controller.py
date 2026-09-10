@@ -1,13 +1,14 @@
 """
 aria_real_mttr_controller.py
 =============================================================================
-This is the MAIN-RESULT script for Table IX. It is the sibling of
+This is the script for Table 16 / Appendix A.2 (admission-rate sensitivity
+at matched low load — see REPRODUCIBILITY.md). It is the sibling of
 aria_matched_controller_fix.py, with exactly ONE substantive difference:
 
   aria_matched_controller_fix.py -> FLAT MTTR (no evidence term)
                                      -> belongs in the sensitivity table
   aria_real_mttr_controller.py   -> REAL MTTR (Eq. 7, evidence-conditioned)
-                                     -> belongs in the main Table IX
+                                     -> belongs in Table 16
 
 Everything else -- QTS, RRS, the cache, the quantile-tracking controller,
 the queue/fatigue mechanics -- is identical between the two scripts. This
@@ -15,16 +16,19 @@ keeps the comparison to the flat-MTTR sensitivity run clean: the ONLY
 thing that changes between the two tables is whether investigation time
 depends on the strength of the supporting evidence.
 
-CAPACITY: ANALYST_CAPACITY is hardcoded to 50, matching the baseline
-script's fixed top-K of 50. Do not compute this from SOC_TOP_K//SIM_STEPS
--- that produces 37, which is what caused the original mismatch this
-whole exercise was set up to fix. If the baseline's top-K ever changes,
-update this constant to match, and re-verify both scripts print the same
-target in their banners.
+CAPACITY: ANALYST_CAPACITY is set to 4 for this run, to target the
+low admission-rate regime used in Table 16 (Appendix A.2), matching the
+baseline's ~7 alerts/window drain capacity described in that section.
+This is deliberately different from the main-result capacity used in
+seeded_variance_comparison.py (Table 12), which targets ~50 alerts/window
+for the reported ARIA run (close to, but not identical to, the baseline's
+45-alert fixed capacity — see Section 3.9.2).
+Do not confuse the two — they answer different questions (high-load vs.
+low-load regime) and are not meant to use the same constant.
 
-Run this alongside baseline.py (with TOP_K = 50) and compare the printed
-summaries directly. These two outputs are what go into the corrected
-Table IX.
+Run this alongside the baseline run for the same low-load regime and
+compare the printed summaries directly. These two outputs are what go
+into Table 16.
 
 --- LOGGING ADDED ---
 attack_rrs_log now records, for every true attack, the confidence score,
@@ -79,8 +83,10 @@ THRESHOLD_MAX = 0.70
 THRESHOLD_GAIN = 0.05
 THRESHOLD_MIN = 0.35
 
-# --- HARDCODED to match baseline.py's fixed TOP_K. Do not derive this
-# from SOC_TOP_K // SIM_STEPS -- that gives 37, not 50. ---
+# --- Low-load target for the Table 16 / Appendix A.2 sensitivity run
+# (paired with a baseline drain capacity of ~7 alerts/window). Do not
+# confuse with the Table 12 main-result capacity (~45/window), which is
+# set separately in seeded_variance_comparison.py. ---
 ANALYST_CAPACITY = 4
 EMA_ALPHA = 0.7
 

@@ -60,7 +60,10 @@ MIN_FATIGUE = 0.55
 MAX_FATIGUE = 1.0
 
 BASELINE_CAPACITY = 45          # baseline.py's fixed top-K
-ARIA_TARGET_CAPACITY = 50       # aria_real_mttr_controller.py's controller target
+ARIA_TARGET_CAPACITY = 50       # controller target used for the reported Table 12 /
+                                 # Fig 7-9 results. Close to, but not identical to,
+                                 # BASELINE_CAPACITY — see Section 3.9.2 wording,
+                                 # which should read "close to" rather than "matching"
 ALERT_THRESHOLD_RAW = 0.5       # baseline's raw_alert_count reporting only
 
 CACHE_SIZE = 500

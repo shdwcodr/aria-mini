@@ -13,8 +13,7 @@ from data_loader import DataLoader   # Your new DataLoader
 # =============================================================================
 TRAIN_SIZE = 120000
 ATTACK_RATIO_TRAIN = 0.40
-TEST_SIZE = 6
-0000
+TEST_SIZE = 60000
 
 print(f"=== ARIA Alert MLP Training ===\n"
       f"Train: {TRAIN_SIZE:,} ({ATTACK_RATIO_TRAIN:.0%} attack)\n"
@@ -66,22 +65,33 @@ print(f"\nFinal Split → Train: {len(X_train):,} | Val: {len(X_val):,} | Test: 
 
 # =============================================================================
 # MODEL
+# Architecture and hyperparameters match paper Section 3.4:
+#   4 hidden layers [512, 256, 128, 64], ReLU, Adam (eta=0.0012),
+#   L2 regularisation (alpha=0.001), batch size 2048,
+#   early stopping with a patience of 35 epochs,
+#   class weights w_benign=1.0, w_attack=2.5.
+# sklearn's MLPClassifier has no native class_weight parameter, so the
+# class weights are applied via sample_weight at fit time instead.
 # =============================================================================
+CLASS_WEIGHT = {0: 1.0, 1: 2.5}   # {benign: 1.0, attack: 2.5}, per Section 3.4
+sample_weight = np.where(y_train == 1, CLASS_WEIGHT[1], CLASS_WEIGHT[0])
+
 mlp = MLPClassifier(
-    hidden_layer_sizes=(128, 64, 32),
+    hidden_layer_sizes=(512, 256, 128, 64),
     activation="relu",
     solver="adam",
-    learning_rate_init=0.001,
+    learning_rate_init=0.0012,
+    alpha=0.001,
     batch_size=2048,
-    max_iter=100,
+    max_iter=500,
     early_stopping=True,
     validation_fraction=0.1,
-    n_iter_no_change=10,
+    n_iter_no_change=35,
     random_state=42
 )
 
 print("\nTraining MLP...")
-mlp.fit(X_train, y_train)
+mlp.fit(X_train, y_train, sample_weight=sample_weight)
 
 # =============================================================================
 # EVALUATION

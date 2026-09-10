@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the paper below."
+title: "ARIA: Rethinking Alert Triage in Security Operations Centres — code"
+authors:
+  - family-names: Palav
+    given-names: Samiksha
+  - family-names: Gavhale
+    given-names: Siddharth
+  - family-names: Pant
+    given-names: Sangeeta
+  - family-names: Kumar
+    given-names: Anuj
+preferred-citation:
+  type: article
+  title: "Automated Reversible Intelligence for Adaptive Response (ARIA): Rethinking Alert Triage in Security Operations Centres"
+  authors:
+    - family-names: Palav
+      given-names: Samiksha
+    - family-names: Gavhale
+      given-names: Siddharth
+    - family-names: Pant
+      given-names: Sangeeta
+    - family-names: Kumar
+      given-names: Anuj
+  journal: "International Journal of Information Security"
+  year: 2026
+license: MIT
+repository-code: "https://github.com/shdwcodr/aria-mini"

@@ -14,6 +14,7 @@ import joblib
 import shap
 import os
 import sys
+import time
 import warnings
 from lime.lime_tabular import LimeTabularExplainer
 from sklearn.exceptions import ConvergenceWarning
@@ -36,7 +37,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 MODEL_PATH = "models/mlp_alert_train120k_4attack.pkl"
 SCALER_PATH = "models/scaler_train120k_4attack.pkl"
 TEST_SIZE   = 40000
-TRAIN_PRIOR = 0.55
+TRAIN_PRIOR = 0.40  # must match models/mlp_alert_train120k_4attack.pkl's ATTACK_RATIO_TRAIN
 TEST_ATTACK_PRIOR  = 0.05
 N_FEATURES  = 6      # top features to show in the table
 N_SAMPLES   = 300    # LIME perturbation samples
@@ -103,16 +104,19 @@ print(f"  Corrected conf   : {corr_conf:.4f}")
 print(f"  True label       : {'ATTACK' if y_test[best_i]==1 else 'BENIGN'}")
 
 # =============================================================================
-# SHAP
+# SHAP (timed — feeds Table 7: "SHAP (direct, per alert)")
 # =============================================================================
 print("\nComputing SHAP values...")
 background = shap.sample(X_test, 100, random_state=42)
 explainer  = shap.Explainer(mlp.predict_proba, background)
-shap_vals  = explainer(instance.reshape(1,-1)).values[0][:, 1]
-print("  SHAP done.")
+
+t0 = time.perf_counter()
+shap_vals = explainer(instance.reshape(1, -1)).values[0][:, 1]
+shap_time_ms = (time.perf_counter() - t0) * 1000
+print(f"  SHAP done. ({shap_time_ms:.1f} ms)")
 
 # =============================================================================
-# LIME
+# LIME (timed — feeds Table 7: "LIME (direct, per alert)")
 # =============================================================================
 print("Computing LIME values...")
 lime_exp = LimeTabularExplainer(
@@ -122,15 +126,50 @@ lime_exp = LimeTabularExplainer(
     mode                  = "classification",
     discretize_continuous = False
 )
+
+t0 = time.perf_counter()
 exp = lime_exp.explain_instance(
     instance, mlp.predict_proba,
     num_features=len(feature_names),
     num_samples=N_SAMPLES,
     labels=(1,)
 )
+lime_time_ms = (time.perf_counter() - t0) * 1000
 lime_dict = dict(exp.as_list(label=1))
 lime_vals = np.array([lime_dict.get(f, 0.0) for f in feature_names])
-print("  LIME done.")
+print(f"  LIME done. ({lime_time_ms:.1f} ms)")
+
+# =============================================================================
+# CACHE LOOKUP TIMING (feeds Table 7: "Cache lookup (Ball Tree kNN)")
+# Builds the same 500-prototype Ball Tree cache described in Section 3.8,
+# then times a single nearest-neighbour lookup against it.
+# =============================================================================
+print("Building 500-prototype cache and timing lookup...")
+np.random.seed(42)
+cache_indices = np.random.choice(len(X_test), min(500, len(X_test)), replace=False)
+cache_X = X_test[cache_indices]
+nn_cache = NearestNeighbors(n_neighbors=1, algorithm="ball_tree").fit(cache_X)
+
+t0 = time.perf_counter()
+nn_cache.kneighbors(instance.reshape(1, -1))
+cache_lookup_time_ms = (time.perf_counter() - t0) * 1000
+print(f"  Cache lookup done. ({cache_lookup_time_ms:.4f} ms)")
+
+timing_row = {
+    "Operation": [
+        "SHAP (direct, per alert)",
+        "LIME (direct, per alert)",
+        "Combined SHAP+LIME (direct)",
+        "Cache lookup (Ball Tree k-nearest-neighbour search)",
+    ],
+    "Time (ms)": [
+        round(shap_time_ms, 1),
+        round(lime_time_ms, 1),
+        round(shap_time_ms + lime_time_ms, 1),
+        round(cache_lookup_time_ms, 4),
+    ],
+}
+df_timing = pd.DataFrame(timing_row)
 
 # =============================================================================
 # BUILD TABLE
@@ -208,13 +247,50 @@ for _, r in df_table.iterrows():
           f"{dir_str:>18} {agree_str}")
 
 
+# =============================================================================
+# BUILD LATEX TABLE (booktabs-style, matches paper Table 8 column layout:
+# Rank | Feature | Value | SHAP | LIME | Direction | Agree)
+# =============================================================================
+latex_lines = [
+    "\\begin{table}[t]",
+    "\\centering",
+    "\\caption{Example drill-down report generated for a Tier 3 alert, "
+    "summarising the strongest feature evidence, SHAP and LIME "
+    "explanations, their agreement, and the final analyst verdict.}",
+    "\\label{tab:drilldown}",
+    "\\begin{tabular}{c l r r r c c}",
+    "\\toprule",
+    "Rank & Feature & Value & SHAP & LIME & Direction & Agree \\\\",
+    "\\midrule",
+]
+for _, r in df_table.iterrows():
+    latex_lines.append(
+        f"{r['Rank']} & {r['Feature']} & {r['Value (scaled)']} & "
+        f"{r['SHAP']:+.4f} & {r['LIME']:+.4f} & {r['Direction']} & "
+        f"{r['Agreement']} \\\\"
+    )
+latex_lines += [
+    "\\bottomrule",
+    "\\end{tabular}",
+    "\\end{table}",
+]
+latex = "\n".join(latex_lines)
+
 os.makedirs("experiments/results", exist_ok=True)
 with open("experiments/results/table6_drilldown.tex", "w") as f:
     f.write(latex)
 
 df_table.to_csv("experiments/results/table6_drilldown.csv", index=False)
 
+# Table 7 — computational cost (single-run timing; see caveat below)
+df_timing.to_csv("experiments/results/table7_shap_lime_timing.csv", index=False)
+
 print(f"\n{'='*70}")
 print(f"\nSaved → experiments/results/table6_drilldown.tex")
 print(f"Saved → experiments/results/table6_drilldown.csv")
+print(f"Saved → experiments/results/table7_shap_lime_timing.csv")
+print("\nTable 7 timings (single run, not averaged over repeats — see")
+print("REPRODUCIBILITY.md for the caveat on reporting single-shot wall-clock")
+print("timings and how to make this a proper N-repeat benchmark instead):")
+print(df_timing.to_string(index=False))
 print("\n✅ SHAP/LIME table complete.")

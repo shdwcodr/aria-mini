@@ -78,6 +78,38 @@ print(f"\nYouden threshold (corrected): {thresh_youden:.4f}")
 y_pred_corr = (y_prob_corr > thresh_youden).astype(int)
 
 # =============================================================================
+# TABLE 4 — RAW (0.5 threshold) vs. PRIOR-CORRECTED (Youden threshold)
+# =============================================================================
+y_pred_raw05 = (y_prob_raw > 0.5).astype(int)
+
+p_raw = precision_score(y_test, y_pred_raw05, zero_division=0)
+r_raw = recall_score(y_test, y_pred_raw05, zero_division=0)
+f1_raw = 2 * p_raw * r_raw / (p_raw + r_raw) if (p_raw + r_raw) > 0 else 0.0
+fp_raw = int(confusion_matrix(y_test, y_pred_raw05)[0, 1])
+
+p_corr_t4 = precision_score(y_test, y_pred_corr, zero_division=0)
+r_corr_t4 = recall_score(y_test, y_pred_corr, zero_division=0)
+f1_corr_t4 = 2 * p_corr_t4 * r_corr_t4 / (p_corr_t4 + r_corr_t4) if (p_corr_t4 + r_corr_t4) > 0 else 0.0
+fp_corr_t4 = int(confusion_matrix(y_test, y_pred_corr)[0, 1])
+
+print("\n" + "="*65)
+print("TABLE 4 — Prior-Shift Correction Effect")
+print("="*65)
+print(f"{'Variant':<32} {'Prec':>7} {'Recall':>7} {'F1':>7} {'FP':>7}")
+print(f"{'Raw model (0.5 threshold)':<32} {p_raw:>7.3f} {r_raw:>7.3f} {f1_raw:>7.3f} {fp_raw:>7,d}")
+print(f"{'Prior-corrected (Youden)':<32} {p_corr_t4:>7.3f} {r_corr_t4:>7.3f} {f1_corr_t4:>7.3f} {fp_corr_t4:>7,d}")
+
+df_table4 = pd.DataFrame([
+    {"Variant": "Raw model (0.5 threshold)", "Precision": round(p_raw, 4),
+     "Recall": round(r_raw, 4), "F1": round(f1_raw, 4), "FP": fp_raw},
+    {"Variant": "Prior-corrected (Youden threshold)", "Precision": round(p_corr_t4, 4),
+     "Recall": round(r_corr_t4, 4), "F1": round(f1_corr_t4, 4), "FP": fp_corr_t4},
+])
+os.makedirs("experiments/results", exist_ok=True)
+df_table4.to_csv("experiments/results/table4_prior_shift_effect.csv", index=False)
+print("\nSaved → experiments/results/table4_prior_shift_effect.csv")
+
+# =============================================================================
 # OVERALL REPORT
 # =============================================================================
 print("\n" + "="*65)

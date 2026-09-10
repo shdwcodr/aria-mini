@@ -285,16 +285,28 @@ for r in rows:
 # =============================================================================
 # SAVE
 # =============================================================================
+# Two files, not one:
+#   - rss_ablation_all_runs.csv : append-log across every run of this script
+#     (different weight configs, different dates), kept for transparency
+#     into the grid search that produced the final weights (w1=0.45,
+#     w2=0.40, w3=0.15).
+#   - rss_ablation_FINAL.csv    : just this run's 4 rows (A/B/C/D), i.e. the
+#     table that actually appears as Table 13 in the paper. Overwritten
+#     every run, so it always reflects the most recent execution rather
+#     than requiring a reviewer to find the right block in the log.
 os.makedirs("experiments/rss_ablation/results", exist_ok=True)
-csv_path = "experiments/rss_ablation/results/rss_ablation_results.csv"
+log_path = "experiments/rss_ablation/results/rss_ablation_all_runs.csv"
+final_path = "experiments/rss_ablation/results/rss_ablation_FINAL.csv"
 
 df_out = pd.DataFrame(rows)
-if os.path.exists(csv_path):
-    df_out.to_csv(csv_path, mode="a", header=False, index=False)
+if os.path.exists(log_path):
+    df_out.to_csv(log_path, mode="a", header=False, index=False)
 else:
-    df_out.to_csv(csv_path, index=False)
+    df_out.to_csv(log_path, index=False)
+df_out.to_csv(final_path, index=False)
 
-print(f"\nSaved → {csv_path}")
+print(f"\nSaved (appended) → {log_path}")
+print(f"Saved (overwritten, canonical Table 13) → {final_path}")
 
 # =============================================================================
 # FIGURE 2 — RRS ABLATION BAR CHART
